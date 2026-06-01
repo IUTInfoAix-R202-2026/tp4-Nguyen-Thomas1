@@ -4,6 +4,9 @@ import com.google.inject.Inject;
 import fr.nedjar.vigiechiro.audio.AudioView;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
@@ -65,6 +68,37 @@ public class QualificationController {
     // 6. zoneCommentaire <-> commentaireProperty (bidirectionnel).
     // 7. choiceVerdict : items = viewModel.listeVerdicts(), valeur <-> verdictSaisiProperty.
     // 8. labelVerdictGlobal <- verdictGlobalLibelleProperty.
+    colHorodatage.setCellValueFactory(
+        cell -> new SimpleStringProperty(HEURE.format(cell.getValue().getHorodatage())));
+
+    colFrequence.setCellValueFactory(
+        cell ->
+            new SimpleStringProperty(
+                String.format(
+                    Locale.ROOT, "%.1f kHz", cell.getValue().getFrequenceDominanteKHz())));
+
+    colDuree.setCellValueFactory(
+        cell ->
+            new SimpleStringProperty(String.format("%d s", cell.getValue().getDureeSecondes())));
+
+    colStatut.setCellValueFactory(cell -> cell.getValue().statutProperty());
+
+    tableSequences.setItems(viewModel.sequencesProperty());
+
+    viewModel
+        .sequenceSelectionneeProperty()
+        .bind(tableSequences.getSelectionModel().selectedItemProperty());
+
+    labelSelection.textProperty().bind(viewModel.descriptionSelectionProperty());
+
+    boutonEcouter.disableProperty().bind(viewModel.peutEcouterProperty().not());
+
+    zoneCommentaire.textProperty().bindBidirectional(viewModel.commentaireProperty());
+
+    choiceVerdict.setItems(FXCollections.observableArrayList(viewModel.listeVerdicts()));
+    choiceVerdict.valueProperty().bindBidirectional(viewModel.verdictSaisiProperty());
+
+    labelVerdictGlobal.textProperty().bind(viewModel.verdictGlobalLibelleProperty());
   }
 
   @FXML
